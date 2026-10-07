@@ -18,7 +18,6 @@ public class HelloWorker {
 
   @JobWorker(type = "los.detect-missing-docs")
   public Map<String, Object> missdoc(@Variable String name) {
-    
     return Map.of("greeting", "Xin chào " + (name == null ? "bạn" : name));
   }
 

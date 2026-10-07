@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1hzmo5v" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.51.1" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.9.0">
+  <bpmn:process id="application-expiry" name="Hồ sơ có hạn hiệu lực" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Nhận hồ sơ">
+      <bpmn:outgoing>Flow_1od3f6q</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1od3f6q" sourceRef="StartEvent_1" targetRef="Gateway_0lj1nq5" />
+    <bpmn:exclusiveGateway id="Gateway_0lj1nq5" name="Gộp">
+      <bpmn:incoming>Flow_1od3f6q</bpmn:incoming>
+      <bpmn:incoming>Flow_0pybmto</bpmn:incoming>
+      <bpmn:outgoing>Flow_1w2ayai</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:sequenceFlow id="Flow_1w2ayai" sourceRef="Gateway_0lj1nq5" targetRef="Activity_17lb35f" />
+    <bpmn:subProcess id="Activity_17lb35f" name="Hồ sơ trong hạn">
+      <bpmn:incoming>Flow_1w2ayai</bpmn:incoming>
+      <bpmn:outgoing>Flow_0yku1qy</bpmn:outgoing>
+      <bpmn:startEvent id="Event_0z22vmj">
+        <bpmn:outgoing>Flow_02mqsy5</bpmn:outgoing>
+      </bpmn:startEvent>
+      <bpmn:userTask id="Activity_1qd6uym" name="Xử lý hồ sơ">
+        <bpmn:extensionElements>
+          <zeebe:userTask />
+        </bpmn:extensionElements>
+        <bpmn:incoming>Flow_02mqsy5</bpmn:incoming>
+        <bpmn:outgoing>Flow_1qoltzv</bpmn:outgoing>
+      </bpmn:userTask>
+      <bpmn:endEvent id="Event_1jpoz88">
+        <bpmn:incoming>Flow_1qoltzv</bpmn:incoming>
+      </bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_02mqsy5" sourceRef="Event_0z22vmj" targetRef="Activity_1qd6uym" />
+      <bpmn:sequenceFlow id="Flow_1qoltzv" sourceRef="Activity_1qd6uym" targetRef="Event_1jpoz88" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_0yku1qy" sourceRef="Activity_17lb35f" targetRef="Event_0ga0vp9" />
+    <bpmn:endEvent id="Event_0ga0vp9" name="Hoàn tất">
+      <bpmn:incoming>Flow_0yku1qy</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="Event_1s2j95m" name="Hết thời hạn" attachedToRef="Activity_17lb35f">
+      <bpmn:outgoing>Flow_15gbtf2</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_0ldmj6g">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">=expiryConfig.draft</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_15gbtf2" sourceRef="Event_1s2j95m" targetRef="Activity_1plz1hg" />
+    <bpmn:task id="Activity_1plz1hg" name="Đánh dấu hết hạn">
+      <bpmn:incoming>Flow_15gbtf2</bpmn:incoming>
+      <bpmn:outgoing>Flow_0t8pcff</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0t8pcff" sourceRef="Activity_1plz1hg" targetRef="Event_0e8sk1d" />
+    <bpmn:endEvent id="Event_0e8sk1d" name="Hết hạn">
+      <bpmn:incoming>Flow_0t8pcff</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:boundaryEvent id="Event_0i92q5v" name="Khách nộp lại" attachedToRef="Activity_17lb35f">
+      <bpmn:outgoing>Flow_0ve5qmh</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_02wynyx" messageRef="Message_394o628" />
+    </bpmn:boundaryEvent>
+    <bpmn:sequenceFlow id="Flow_0ve5qmh" sourceRef="Event_0i92q5v" targetRef="Activity_1q7t75d" />
+    <bpmn:task id="Activity_1q7t75d" name="Ghi nhận nộp lại">
+      <bpmn:incoming>Flow_0ve5qmh</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pybmto</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0pybmto" sourceRef="Activity_1q7t75d" targetRef="Gateway_0lj1nq5" />
+  </bpmn:process>
+  <bpmn:message id="Message_394o628" name="Msg_ApplicationStatusUpdated">
+    <bpmn:extensionElements>
+      <zeebe:subscription correlationKey="=id" />
+    </bpmn:extensionElements>
+  </bpmn:message>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="application-expiry">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0lj1nq5_di" bpmnElement="Gateway_0lj1nq5" isMarkerVisible="true">
+        <dc:Bounds x="275" y="155" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_17lb35f_di" bpmnElement="Activity_17lb35f" isExpanded="true">
+        <dc:Bounds x="420" y="80" width="350" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0z22vmj_di" bpmnElement="Event_0z22vmj">
+        <dc:Bounds x="460" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07h4yxl_di" bpmnElement="Activity_1qd6uym">
+        <dc:Bounds x="560" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1jpoz88_di" bpmnElement="Event_1jpoz88">
+        <dc:Bounds x="702" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_02mqsy5_di" bpmnElement="Flow_02mqsy5">
+        <di:waypoint x="496" y="180" />
+        <di:waypoint x="560" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qoltzv_di" bpmnElement="Flow_1qoltzv">
+        <di:waypoint x="660" y="180" />
+        <di:waypoint x="702" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Event_0ga0vp9_di" bpmnElement="Event_0ga0vp9">
+        <dc:Bounds x="982" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1plz1hg_di" bpmnElement="Activity_1plz1hg">
+        <dc:Bounds x="410" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0e8sk1d_di" bpmnElement="Event_0e8sk1d">
+        <dc:Bounds x="442" y="532" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1q7t75d_di" bpmnElement="Activity_1q7t75d">
+        <dc:Bounds x="670" y="390" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0i92q5v_di" bpmnElement="Event_0i92q5v">
+        <dc:Bounds x="702" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1s2j95m_di" bpmnElement="Event_1s2j95m">
+        <dc:Bounds x="442" y="262" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1od3f6q_di" bpmnElement="Flow_1od3f6q">
+        <di:waypoint x="218" y="180" />
+        <di:waypoint x="275" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w2ayai_di" bpmnElement="Flow_1w2ayai">
+        <di:waypoint x="325" y="180" />
+        <di:waypoint x="420" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0yku1qy_di" bpmnElement="Flow_0yku1qy">
+        <di:waypoint x="770" y="180" />
+        <di:waypoint x="982" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_15gbtf2_di" bpmnElement="Flow_15gbtf2">
+        <di:waypoint x="460" y="298" />
+        <di:waypoint x="460" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t8pcff_di" bpmnElement="Flow_0t8pcff">
+        <di:waypoint x="460" y="470" />
+        <di:waypoint x="460" y="532" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ve5qmh_di" bpmnElement="Flow_0ve5qmh">
+        <di:waypoint x="720" y="298" />
+        <di:waypoint x="720" y="390" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pybmto_di" bpmnElement="Flow_0pybmto">
+        <di:waypoint x="720" y="470" />
+        <di:waypoint x="720" y="610" />
+        <di:waypoint x="300" y="610" />
+        <di:waypoint x="300" y="205" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
